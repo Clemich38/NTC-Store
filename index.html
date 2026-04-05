@@ -6,6 +6,8 @@
 <title>Running Club Merch</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
 <style>
   /* ============================================================
      THEME VARIABLES
@@ -84,8 +86,8 @@
   }
   .logo-icon svg { width: 20px; height: 20px; }
   .logo-text {
-    font-family: 'Special Elite', serif;
-    font-weight: 400; font-size: 1.25rem;
+    font-family: 'Barlow Condensed', serif;
+    font-weight: 800; font-size: 1.25rem;
     letter-spacing: 0.05em; line-height: 1;
   }
   .logo-text span { color: var(--accent); }
@@ -127,8 +129,8 @@
     color: var(--accent); margin-bottom: 14px;
   }
   .hero h1 {
-    font-family: 'Special Elite', serif;
-    font-weight: 400; font-size: clamp(2.4rem,7vw,5.2rem);
+    font-family: 'Barlow Condensed', serif;
+    font-weight: 800; font-size: clamp(2.4rem,7vw,5.2rem);
     line-height: 1.0; letter-spacing: 0.02em;
     text-transform: uppercase; max-width: 700px; margin-bottom: 20px;
   }
@@ -144,8 +146,8 @@
     justify-content: space-between; gap: 12px;
   }
   .section-title {
-    font-family: 'Special Elite', serif;
-    font-weight: 400; font-size: clamp(1.4rem,3vw,2rem);
+    font-family: 'Barlow Condensed', serif;
+    font-weight: 800; font-size: clamp(1.4rem,3vw,2rem);
     letter-spacing: 0.04em; text-transform: uppercase;
   }
   .item-count {
@@ -219,8 +221,8 @@
   .product-body { padding: 18px; display: flex; flex-direction: column; gap: 12px; flex: 1; }
   .product-meta { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
   .product-name {
-    font-family: 'Special Elite', serif;
-    font-weight: 400; font-size: 1.05rem; letter-spacing: 0.02em; line-height: 1.2;
+    font-family: 'Barlow Condensed', serif;
+    font-weight: 800; font-size: 1.05rem; letter-spacing: 0.02em; line-height: 1.2;
   }
   .product-price {
     font-family: 'Courier Prime', monospace;
@@ -303,8 +305,8 @@
     display: flex; align-items: center; justify-content: space-between;
   }
   .cart-header h2 {
-    font-family: 'Special Elite', serif;
-    font-weight: 400; font-size: 1.35rem;
+    font-family: 'Barlow Condensed', serif;
+    font-weight: 800; font-size: 1.35rem;
     letter-spacing: 0.05em; text-transform: uppercase;
   }
   .close-btn {
@@ -334,8 +336,8 @@
   .cart-item-emoji img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
   .cart-item-info { flex: 1; min-width: 0; }
   .cart-item-name {
-    font-family: 'Special Elite', serif;
-    font-weight: 400; font-size: 0.9rem; letter-spacing: 0.02em; line-height: 1.2; margin-bottom: 2px;
+    font-family: 'Barlow Condensed', serif;
+    font-weight: 800; font-size: 0.9rem; letter-spacing: 0.02em; line-height: 1.2; margin-bottom: 2px;
   }
   .cart-item-opts { font-size: 0.75rem; color: var(--txt2); margin-bottom: 6px; }
   .cart-item-bot { display: flex; align-items: center; justify-content: space-between; }
@@ -405,8 +407,8 @@
   .modal-close:hover { background: var(--accent); color: #2a1520; }
 
   .modal-title {
-    font-family: 'Special Elite', serif;
-    font-weight: 400; font-size: 1.35rem;
+    font-family: 'Barlow Condensed', serif;
+    font-weight: 800; font-size: 1.35rem;
     letter-spacing: 0.03em; text-transform: uppercase;
   }
   .modal-title span { color: var(--accent); }
@@ -513,7 +515,7 @@
   REMOVING A PRODUCT: delete the entire { ... } block (remove trailing comma)
   ============================================================ -->
 <script>
-const CLUB_NAME    = "Pace Setters RC";       // ← Your club name
+const CLUB_NAME    = "NTC";       // ← Your club name
 const PAYPAL_ME    = "YourPayPalUsername";     // ← Your PayPal.me username
 const CURRENCY     = "AUD";                    // ← Currency code
 const CURRENCY_SYM = "$";                      // ← Currency symbol
@@ -609,7 +611,7 @@ const PRODUCTS = [
 
 <section class="hero">
   <div class="hero-eyebrow">Official Club Merchandise</div>
-  <h1>RUN<br>WITH <em>PRIDE</em></h1>
+  <h1>NUREMBERG<br>TRACK <em>CLUB</em></h1>
   <p class="hero-sub" id="heroSub"></p>
 </section>
 
