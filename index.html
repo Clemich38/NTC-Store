@@ -217,6 +217,67 @@
   }
   .car-dot.active { background: var(--accent); transform: scale(1.3); }
 
+  /* ---- Zoom cursor on slides that have images ---- */
+  .carousel-slide.has-image { cursor: zoom-in; }
+
+  /* ============================================================
+     LIGHTBOX
+     ============================================================ */
+  .lightbox {
+    position: fixed; inset: 0; z-index: 500;
+    background: rgba(0,0,0,0.93);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s;
+  }
+  .lightbox.show { opacity: 1; pointer-events: all; }
+
+  .lightbox-img {
+    max-width: 92vw; max-height: 88vh;
+    object-fit: contain; border-radius: 6px;
+    user-select: none; -webkit-user-drag: none;
+    transition: opacity 0.18s;
+  }
+  .lightbox-img.fade { opacity: 0; }
+
+  .lightbox-close {
+    position: absolute; top: 16px; right: 16px;
+    width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18);
+    color: #fff; font-size: 1.4rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: background var(--transition);
+    z-index: 2;
+  }
+  .lightbox-close:hover { background: var(--accent); color: #2a1520; border-color: var(--accent); }
+
+  .lightbox-nav {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 44px; height: 44px; border-radius: 50%;
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18);
+    color: #fff; font-size: 1.6rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: background var(--transition), opacity var(--transition);
+    z-index: 2;
+  }
+  .lightbox-nav:hover { background: var(--accent); color: #2a1520; border-color: var(--accent); }
+  .lightbox-nav.lb-prev { left: 16px; }
+  .lightbox-nav.lb-next { right: 16px; }
+  .lightbox-nav.hidden { opacity: 0; pointer-events: none; }
+
+  .lightbox-counter {
+    position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+    font-family: 'Courier Prime', monospace; font-size: 0.8rem;
+    color: rgba(255,255,255,0.5); letter-spacing: 0.12em;
+    pointer-events: none;
+  }
+
+  .lightbox-caption {
+    position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+    font-family: 'Special Elite', serif; font-size: 1rem; color: rgba(255,255,255,0.75);
+    white-space: nowrap; pointer-events: none;
+  }
+
   /* ---- Card body ---- */
   .product-body { padding: 18px; display: flex; flex-direction: column; gap: 12px; flex: 1; }
   .product-meta { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
@@ -614,7 +675,7 @@ const PRODUCTS = [
 
 <section class="hero">
   <div class="hero-eyebrow">Official Club Merchandise</div>
-  <h1>NUREMBERG<br>TRACK <em>CLUB</em></h1>
+  <h1>RUN<br>WITH <em>PRIDE</em></h1>
   <p class="hero-sub" id="heroSub"></p>
 </section>
 
@@ -677,6 +738,16 @@ const PRODUCTS = [
   </div>
 </div>
 
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="lbBgClick(event)">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <button class="lightbox-nav lb-prev hidden" id="lbPrev" onclick="lbShift(-1)">&#8249;</button>
+  <img class="lightbox-img" id="lbImg" src="" alt="" draggable="false" />
+  <button class="lightbox-nav lb-next hidden" id="lbNext" onclick="lbShift(1)">&#8250;</button>
+  <div class="lightbox-caption" id="lbCaption"></div>
+  <div class="lightbox-counter" id="lbCounter"></div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
@@ -717,8 +788,8 @@ function buildCarousel(p) {
   const slides = (p.images && p.images.length) ? p.images : [null];
   carouselState[p.id] = 0;
 
-  const slidesHTML = slides.map(src =>
-    `<div class="carousel-slide">${src
+  const slidesHTML = slides.map((src, i) =>
+    `<div class="carousel-slide${src ? ' has-image' : ''}"${src ? ` onclick="openLightbox('${p.id}',${i})"` : ''}>${src
       ? `<img src="${src}" alt="${p.name}" loading="lazy" />`
       : p.emoji
     }</div>`
@@ -1003,7 +1074,7 @@ async function submitOrder() {
   const btn   = document.getElementById('paypalBtn');
 
   // Build order data
-  const keys = Object.keys(cart);
+  const keys  = Object.keys(cart);
   const total = cartTotal().toFixed(2);
   const items = keys.map(k => {
     const { product: p, size, gender, qty } = cart[k];
@@ -1011,7 +1082,19 @@ async function submitOrder() {
     return `${qty}x ${p.name}${opts ? ' ('+opts+')' : ''}`;
   }).join(', ');
 
-  // Save to Google Sheets if configured
+  const paypalUrl = `https://www.paypal.com/paypalme/${PAYPAL_ME}/${total}${CURRENCY}`;
+
+  // ── IMPORTANT: window.open() MUST be called synchronously inside the
+  // user-gesture handler. Mobile browsers (iOS Safari etc.) block any
+  // window.open() that happens after an await. We open the window now
+  // with a loading page, then redirect it to PayPal once sheet-saving
+  // is done (or immediately if no sheet URL is configured).
+  const paypalWin = window.open('about:blank', '_blank');
+
+  closeCheckoutModal();
+  showToast('Opening PayPal — thanks ' + name + '!');
+
+  // Save to Google Sheets if configured (runs after window is already open)
   if (SHEETS_URL) {
     btn.disabled = true;
     msgEl.textContent = '⏳ Saving your order…';
@@ -1034,12 +1117,13 @@ async function submitOrder() {
     btn.disabled = false;
   }
 
-  // Open PayPal
-  const paypalUrl = `https://www.paypal.com/paypalme/${PAYPAL_ME}/${total}${CURRENCY}`;
-  window.open(paypalUrl, '_blank');
-
-  closeCheckoutModal();
-  showToast('Opening PayPal — thanks ' + name + '!');
+  // Now navigate the already-open window to PayPal (amount intact)
+  if (paypalWin) {
+    paypalWin.location.href = paypalUrl;
+  } else {
+    // Fallback if popup was blocked: navigate current tab
+    window.location.href = paypalUrl;
+  }
 }
 
 // Close modal on overlay click
@@ -1056,6 +1140,76 @@ document.getElementById('modalOverlay').addEventListener('click', function(e) {
     }
   });
 });
+
+/* ================================================================
+   LIGHTBOX
+   ================================================================ */
+const lb = { images: [], index: 0, name: '' };
+
+function openLightbox(pid, index) {
+  const product = PRODUCTS.find(p => p.id === pid);
+  if (!product || !product.images || !product.images.length) return;
+  lb.images = product.images;
+  lb.name   = product.name;
+  lb.index  = index;
+  lbRender();
+  document.getElementById('lightbox').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+function lbBgClick(e) {
+  if (e.target === document.getElementById('lightbox')) closeLightbox();
+}
+
+function lbShift(dir) {
+  const next = (lb.index + dir + lb.images.length) % lb.images.length;
+  const img  = document.getElementById('lbImg');
+  img.classList.add('fade');
+  setTimeout(() => {
+    lb.index = next;
+    lbRender();
+    img.classList.remove('fade');
+  }, 160);
+}
+
+function lbRender() {
+  const img     = document.getElementById('lbImg');
+  const prev    = document.getElementById('lbPrev');
+  const next    = document.getElementById('lbNext');
+  const counter = document.getElementById('lbCounter');
+  const caption = document.getElementById('lbCaption');
+  img.src           = lb.images[lb.index];
+  img.alt           = lb.name;
+  caption.textContent = lb.name;
+  const multi       = lb.images.length > 1;
+  prev.classList.toggle('hidden', !multi);
+  next.classList.toggle('hidden', !multi);
+  counter.textContent = multi ? `${lb.index + 1} / ${lb.images.length}` : '';
+}
+
+// Keyboard navigation for lightbox
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lightbox').classList.contains('show')) return;
+  if (e.key === 'ArrowLeft')  lbShift(-1);
+  if (e.key === 'ArrowRight') lbShift(1);
+  if (e.key === 'Escape')     closeLightbox();
+});
+
+// Touch swipe support for lightbox
+(function() {
+  let startX = 0;
+  const el = document.getElementById('lightbox');
+  el.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
+  el.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 50) lbShift(dx < 0 ? 1 : -1);
+  });
+})();
 
 /* ================================================================
    TOAST
