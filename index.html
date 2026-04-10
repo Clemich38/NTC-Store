@@ -1124,6 +1124,11 @@ async function submitOrder() {
     // Fallback if popup was blocked: navigate current tab
     window.location.href = paypalUrl;
   }
+
+  // Clear the cart
+  Object.keys(cart).forEach(k => delete cart[k]);
+  updateCartUI();
+  
 }
 
 // Close modal on overlay click
